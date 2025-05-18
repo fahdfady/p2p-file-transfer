@@ -8,6 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "rust-code":"./src/rustcode/pkg"
+  },
   "devDependencies": {
     "typescript": "~5.8.3",
     "vite": "^6.3.5",
