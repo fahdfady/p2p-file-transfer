@@ -1,7 +1,18 @@
-import './style.css'
+import { initWasm } from "./utils/wasm";
+import PeerConnection from "./PeerConnection";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <h1>P2P File Transfer</h1>
-  </div>
-`
+const fileInput = document.querySelector("input#fileInput") as HTMLInputElement;
+const textarea = document.querySelector("textarea#signaling") as HTMLTextAreaElement;
+const button = document.querySelector("button#connectBtn") as HTMLButtonElement;
+
+const onData = (rawBinaryData: ArrayBuffer) => {
+    console.log("rawBinaryData    ", rawBinaryData);
+}
+
+const peerConnection = new PeerConnection(onData);
+
+button?.addEventListener("click", () => {
+    const signalingData = textarea.value;
+    console.log(signalingData);
+    peerConnection.setup()
+});

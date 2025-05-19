@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "rust-code":"./src/rustcode/pkg"
+    "rust-code":"./rustcode/pkg"
   },
   "devDependencies": {
     "typescript": "~5.8.3",
