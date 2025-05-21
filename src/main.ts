@@ -1,18 +1,15 @@
-import { initWasm } from "./utils/wasm";
-import PeerConnection from "./PeerConnection";
+import { FileSelector } from './FileSelector';
+import { Transfer } from './Transfer';
 
-const fileInput = document.querySelector("input#fileInput") as HTMLInputElement;
-const textarea = document.querySelector("textarea#signaling") as HTMLTextAreaElement;
-const button = document.querySelector("button#connectBtn") as HTMLButtonElement;
+const transfer = new Transfer('connectBtn', 'signaling', 'progress');
+transfer.init();
 
-const onData = (rawBinaryData: ArrayBuffer) => {
-    console.log("rawBinaryData    ", rawBinaryData);
-}
-
-const peerConnection = new PeerConnection(onData);
-
-button?.addEventListener("click", () => {
-    const signalingData = textarea.value;
-    console.log(signalingData);
-    peerConnection.setup()
+const selector = new FileSelector('fileInput');
+selector.init().then(() => {
+  selector.input.addEventListener('change', async () => {
+    const file = selector.input.files?.[0];
+    if (file) {
+      await transfer.sendFile(file);
+    }
+  });
 });

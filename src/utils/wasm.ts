@@ -5,7 +5,7 @@ export interface WasmModule {
     hash_chunk(chunk: Uint8Array): string,
 }
 
-export async function initWasm() {
+export async function initWasm(): Promise<WasmModule> {
     const wasm = await import('../../rustcode/pkg/rustcode.js');
     wasm.default();
 
