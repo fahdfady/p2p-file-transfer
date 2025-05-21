@@ -5,12 +5,10 @@ export class Transfer {
     private wasm: any;
     private pc: PeerConnection;
     private progress: HTMLElement;
+    isConnected: boolean = false;
 
     constructor(connectBtnId: string, signalingId: string, progressId: string) {
         console.log('Transfer constructor');
-        console.log('connectBtnId:', connectBtnId);
-        console.log('signalingId:', signalingId);
-        console.log('progressId:', progressId);
         this.progress = document.getElementById(progressId) as HTMLElement;
         this.pc = new PeerConnection((data) => this.handleReceived(data));
         this.setup(connectBtnId, signalingId);
@@ -24,22 +22,58 @@ export class Transfer {
         const btn = document.getElementById(connectBtnId) as HTMLButtonElement;
         const signaling = document.getElementById(signalingId) as HTMLTextAreaElement;
 
+        if (!btn || !signaling) {
+            throw new Error('UI elements not found');
+        };
+
         btn.addEventListener('click', async () => {
             const input = signaling.value.trim();
-            if (!input) {
-                const offer = await this.pc.createOffer();
-                signaling.value = offer;
-                this.progress.textContent = 'Share the offer with the peer.';
-            } else if (input.includes('"type":"offer"')) {
-                await this.pc.setRemoteDescription(input);
-                const answer = await this.pc.createAnswer();
-                signaling.value = answer;
-                this.progress.textContent = 'Share the answer with the peer.';
-            } else if (input.includes('"type":"answer"')) {
-                await this.pc.setRemoteDescription(input);
-                this.progress.textContent = 'Connected! Ready to transfer.';
+            try {
+                if (!input) {
+                    // step1: create offer
+                    const offer = await this.pc.createOffer();
+                    signaling.value = offer;
+                    this.progress.textContent = 'Share the offer with the peer.';
+                } else if (input.includes('"type":"offer"')) {
+                    // step2: create answer
+                    await this.pc.setRemoteDescription(input);
+                    const answer = await this.pc.createAnswer();
+                    signaling.value = answer;
+                    this.progress.textContent = 'Share the answer with the peer.';
+                } else if (input.includes('"type":"answer"')) {
+                    // step3: set answer
+                    await this.pc.setRemoteDescription(input);
+                    setTimeout(() => {
+                        this.progress.textContent = 'Connected! Ready to transfer.';
+                    }, 1000);
+
+                }
+                // Check connection after each signaling step
+                await this.handleConnection();
+            } catch (e) {
+                console.error('Signaling error:', e);
+                this.progress.textContent = 'Signaling failed. Check console.';
             }
         });
+    }
+
+    async handleConnection() {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        let readyState = this.pc.channel?.readyState;
+
+        if (readyState === 'open') {
+            this.isConnected = true;
+            console.log(this.pc)
+            // this.progress.textContent = 'Connected! Ready to transfer.';
+        }
+        else {
+            this.isConnected = false;
+            console.log(this.pc)
+
+            // this.progress.textContent = 'Not connected to a peer.';
+        }
+
+
     }
 
     async sendFile(file: File) {
